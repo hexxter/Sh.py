@@ -4,18 +4,18 @@ from subprocess import Popen, PIPE
 
 class Shell:
 
-    def __init__( self, command, secure ):
+    def __init__( self, command, secure=False ):
 
         assert command
 
         self._command = command
-        self._secure = False
+        self._secure = secure
         self._encoding="utf-8"
 
 
     def run( self ):
 
-        if( not self._secure ):
+        if not self._secure:
         
             with Popen( self._command, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True ) as proc:
 
@@ -29,9 +29,9 @@ class Shell:
                 out = proc.stdout.read()
                 err = proc.stderr.read()
 
-        if( out ):
+        if out:
             out = out.decode( "utf-8" )
-        if( err ):
+        if err:
             err = out.decode( "utf-8" )
 
         return (out, err)
@@ -53,7 +53,7 @@ class Shell:
 
     def __str__( self ):
 
-        (out,err) = self.run()
+        out, err = self.run()
 
         return out;
 
