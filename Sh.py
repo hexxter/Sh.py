@@ -1,100 +1,121 @@
 #!/usr/bin/python3
 
 from subprocess import Popen, PIPE
+import sys
 
 class Shell:
 
-    def __init__( self, command, secure ):
+	def __init__( self, command, *args, trusted ):
 
-        assert command
+		assert command
 
-        self._command = command
-        self._secure = False
-        self._encoding="utf-8"
-
-
-    def run( self ):
-
-        if( not self._secure ):
-        
-            with Popen( self._command, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True ) as proc:
-
-                out = proc.stdout.read()
-                err = proc.stderr.read()
-
-        else:
-
-            with Popen( self._command, stdin=PIPE, stdout=PIPE, stderr=PIPE ) as proc:
-
-                out = proc.stdout.read()
-                err = proc.stderr.read()
-
-        if( out ):
-            out = out.decode( "utf-8" )
-        if( err ):
-            err = out.decode( "utf-8" )
-
-        return (out, err)
+		self._command = command
+		self._args = args
+		self._trusted = trusted
+		self._encoding = sys.getdefaultencoding()
+		self._bufsize = 4096
 
 
-    def arg( self, argument ):
+	def run( self ):
 
-        self._command += " " + argument;
+		if not self._trusted:
 
-        return self
+			stdin = PIPE
+			stdout = PIPE
+			stderr = PIPE
 
+			with Popen( self._command,
+					stdin=stdin, stdout=stdout, stderr=stderr,
+					bufsize=self._bufsize,
+					shell=True
+			) as proc:
 
-    def encoding( self, encoding ):
+				out = proc.stdout.read()
+				err = proc.stderr.read()
 
-        self._encoding = encoding
+		else:
 
-        return self
+			with Popen( self._command, stdin=PIPE, stdout=PIPE, stderr=PIPE ) as proc:
 
+				out = proc.stdout.read()
+				err = proc.stderr.read()
 
-    def __str__( self ):
+		outS = out.decode( self._encoding )
+		errS = err.decode( self._encoding )
 
-        (out,err) = self.run()
-
-        return out;
-
-
-    def __add__( self, other ):
-        
-        self._command += " " + other
-
-
-    def __ror__( self, other ):
-
-        print( dir( other ) )
-
-        self._in = other
-
-        return self
+		return (outS, errS)
 
 
-    def __or__( self, other ):
+	def arg( self, argument ):
 
-        print( dir( other ) )
+		self._command += " " + argument;
 
-        self._out = other
+		return self
 
-        return self;
+
+	def encoding( self, encoding ):
+
+		self._encoding = encoding
+
+		return self
+
+
+	def bufsize( self, newsize ):
+
+		self._bufsize = newsize
+
+		return self
+
+
+	def __str__( self ):
+
+		(out,err) = self.run()
+
+		return out;
+
+
+	def __add__( self, other ):
+
+		self._command += " " + other
+
+
+	def __ror__( self, other ):
+
+		print( "ROR" )
+		print( type( other ) )
+		#print( dir( other ) )
+
+		self._in = other
+
+		return self
+
+
+	def __or__( self, other ):
+
+		print( "OR" )
+		print( isinstance( other, function ) )
+		print( type( other ) )
+		#print( dir( other ) )
+
+		self._out = other
+
+		return self;
 
 
 class Sh( Shell ):
 
-    "Execute Shell commands in a insane way"
+	"Execute Shell commands in a insane way"
 
-    def __init__( self, command ):
+	def __init__( self, command, *args ):
 
-        super( Sh, self ).__init__( command, False )
+		super( Sh, self ).__init__( command, args, trusted=False )
 
 
 class sh( Shell ):
 
-    "Execute Shell commands in a sane way"
+	"Execute Shell commands in a sane way"
 
-    def __init__( self, command ):
+	def __init__( self, command, *args ):
 
-        super( Sh, self ).__init__( command, True )
+		super( Sh, self ).__init__( command, args, trusted=True )
 
