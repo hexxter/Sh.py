@@ -2,6 +2,7 @@
 
 from subprocess import Popen, PIPE
 import sys
+from shlex import quote
 
 class Shell:
 
@@ -10,45 +11,86 @@ class Shell:
 		assert command
 
 		self._command = command
-		self._args = args
+		self._args = []
+		print( self._args, args )
+		self._args.extend( args )
+		print( self._args )
 		self._trusted = trusted
 		self._encoding = sys.getdefaultencoding()
 		self._bufsize = 4096
 
 
+	def _the_args_escaped( self ):
+
+		if( self._args ):
+			return " ".join( "'" + it + "'" for it in self._args )
+		else:
+			return ""
+
+	def _the_args( self ):
+
+		if( self._args ):
+			return " ".join( self._args )
+		else:
+			return ""
+
+
 	def run( self ):
 
-		if not self._trusted:
+		with self.process() as proc:
 
-			stdin = PIPE
-			stdout = PIPE
-			stderr = PIPE
+			out = proc.stdout.read()
+			#err = proc.stderr.read()
 
-			with Popen( self._command,
-					stdin=stdin, stdout=stdout, stderr=stderr,
-					bufsize=self._bufsize,
-					shell=True
-			) as proc:
 
-				out = proc.stdout.read()
-				err = proc.stderr.read()
-
-		else:
-
-			with Popen( self._command, stdin=PIPE, stdout=PIPE, stderr=PIPE ) as proc:
-
-				out = proc.stdout.read()
-				err = proc.stderr.read()
-
-		outS = out.decode( self._encoding )
-		errS = err.decode( self._encoding )
+		outS = str( out, self._encoding )
+		errS = "" #str( err, self._encoding )
 
 		return (outS, errS)
 
 
+	def process( self, preproc=None ):
+
+		stdin = None
+		stdout = PIPE
+		stderr = None
+
+		if preproc != None:
+			stdin = preproc.stdout
+
+		if hasattr( self, '_in' ):
+			stdin = PIPE
+
+		command = self._command + self._the_args()
+
+		print( "---->" + command )
+
+		proc = Popen( command,
+				stdin=stdin, stdout=stdout, stderr=stderr,
+				bufsize=self._bufsize,
+				shell=True )
+
+		if hasattr( self, '_in' ):
+			proc.stdin.write( self._in.encode( self._encoding ) )
+			proc.stdin.close()
+
+		if hasattr( self, '_out' ):
+			if hasattr( self._out, 'process' ):
+
+				subproc = self._out.process( proc )
+
+				proc.stdout.close()
+
+				return subproc
+
+		return proc
+
+
 	def arg( self, argument ):
 
-		self._command += " " + argument;
+		self._args.append( argument );
+
+		print( self._args )
 
 		return self
 
@@ -81,9 +123,7 @@ class Shell:
 
 	def __ror__( self, other ):
 
-		print( "ROR" )
-		print( type( other ) )
-		#print( dir( other ) )
+		print( "=ROR=", type( other ), "|", self._command  )
 
 		self._in = other
 
@@ -92,14 +132,31 @@ class Shell:
 
 	def __or__( self, other ):
 
-		print( "OR" )
-		print( isinstance( other, function ) )
-		print( type( other ) )
-		#print( dir( other ) )
+		print( "=OR=", self._command, type( other ) )
 
-		self._out = other
+		if hasattr( other, '__call__' ):
 
-		return self;
+			print( "==CALL==" )
+			return other( self.__str__() )
+
+		else:
+
+			if not hasattr( self, '_out ' ):
+				print( "==STORE==" )
+				self._out = other
+			else:
+				if hasattr( self._out, '__or__' ):
+					print( "==STORE==" )
+					self._out.__or__( other )
+				else:
+					raise AttributeError( 'Tried to chain the unchainable' )
+
+			return self;
+
+
+	def info( self ):
+
+		return self._command + " " + self._the_args()
 
 
 class Sh( Shell ):
