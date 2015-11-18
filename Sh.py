@@ -12,9 +12,9 @@ class Shell:
 
 		self._command = command
 		self._args = []
-		print( self._args, args )
+		#print( self._args, args )
 		self._args.extend( args )
-		print( self._args )
+		#print( self._args )
 		self._trusted = trusted
 		self._encoding = sys.getdefaultencoding()
 		self._bufsize = 4096
@@ -33,6 +33,13 @@ class Shell:
 			return " ".join( self._args )
 		else:
 			return ""
+
+	def _the_command( self ):
+
+		if self._args:
+			return self._command + " " + self._the_args()
+		else:
+			return self._command
 
 
 	def run( self ):
@@ -61,11 +68,7 @@ class Shell:
 		if hasattr( self, '_in' ):
 			stdin = PIPE
 
-		command = self._command + self._the_args()
-
-		print( "---->" + command )
-
-		proc = Popen( command,
+		proc = Popen( self._the_command(),
 				stdin=stdin, stdout=stdout, stderr=stderr,
 				bufsize=self._bufsize,
 				shell=True )
@@ -90,7 +93,7 @@ class Shell:
 
 		self._args.append( argument );
 
-		print( self._args )
+		#print( self._args )
 
 		return self
 
@@ -116,14 +119,19 @@ class Shell:
 		return out;
 
 
+	def __repr__( self ):
+
+		return self._the_command()
+
+
 	def __add__( self, other ):
 
-		self._command += " " + other
+		return self.arg( other )
 
 
 	def __ror__( self, other ):
 
-		print( "=ROR=", type( other ), "|", self._command  )
+		#print( "=ROR=", type( other ), "|", self._command  )
 
 		self._in = other
 
@@ -132,21 +140,21 @@ class Shell:
 
 	def __or__( self, other ):
 
-		print( "=OR=", self._command, type( other ) )
+		#print( "=OR=", self._command, type( other ) )
 
 		if hasattr( other, '__call__' ):
 
-			print( "==CALL==" )
+			#print( "==CALL==" )
 			return other( self.__str__() )
 
 		else:
 
 			if not hasattr( self, '_out ' ):
-				print( "==STORE==" )
+				#print( "==STORE==" )
 				self._out = other
 			else:
 				if hasattr( self._out, '__or__' ):
-					print( "==STORE==" )
+					#print( "==STORE==" )
 					self._out.__or__( other )
 				else:
 					raise AttributeError( 'Tried to chain the unchainable' )
@@ -154,9 +162,6 @@ class Shell:
 			return self;
 
 
-	def info( self ):
-
-		return self._command + " " + self._the_args()
 
 
 class Sh( Shell ):
@@ -165,7 +170,7 @@ class Sh( Shell ):
 
 	def __init__( self, command, *args ):
 
-		super( Sh, self ).__init__( command, args, trusted=False )
+		super( Sh, self ).__init__( command, *args, trusted=False )
 
 
 class sh( Shell ):
@@ -174,5 +179,5 @@ class sh( Shell ):
 
 	def __init__( self, command, *args ):
 
-		super( Sh, self ).__init__( command, args, trusted=True )
+		super( Sh, self ).__init__( command, *args, trusted=True )
 

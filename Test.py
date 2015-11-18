@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
 import unittest
-import sys
-from Sh import Sh,sh
+from sh.Sh import Sh,sh
 
 
 class TestSh(unittest.TestCase):
@@ -16,61 +15,62 @@ class TestSh(unittest.TestCase):
 	def setUp( self ):
 		pass
 
+	
+	def test_str__( self ):
+
+		expr = Sh( "echo foo" )
+
+		print( expr )
+
+		self.assertNotEqual( expr, "foo\n" ) #because this doesn't run it
+		self.assertEqual( str( expr ), "foo\n" ) #This will run it
+
+		self.assertEqual( repr( expr ), "echo foo" ) 
+
 
 	def test_long_pipe( self ):
-
-		return#
 
 		"blah" | Sh( "sed -e 's/ah/ub/'" ) | Sh( "tr '[:lower:]' '[:upper:]'" ) | print
 
 
 	def test_normal( self ):
 
-		return
-
 		"""
+		Inline pipe
 		Nomal shell operation with pipes and no hustles
 		"""
 		
-		print( "=== Inline pipe ===" )
-
-		result = str( Sh( "ls . | grep ^Sh.py" ) )
-		print( result )
-		self.assertEqual( ""+result, "Sh.py\n")
+		result = str( Sh( "echo foo | sed -e 's/foo/bar/'" ) )
+		#print( result )
+		self.assertEqual( ""+result, "bar\n")
 
 	
 	def test_piping( self ):
 
-		return
-
 		"""
-		This is (only) needed if we want to use secure scripting
+		External pipe
+		The external pipe is (only) needed if we want to use secure scripting
 		"""
 
-		print( "=== Extern pipe ===" )
-
-		result = str( Sh( "ls", "." ) | Sh( "grep", "^Sh.py" ) )
-		print( result )
-		self.assertEqual( ""+result, "Sh.py\n")
+		result = str( Sh( "echo foo" ) | Sh( "sed -e 's/foo/bar/'" ) )
+		#print( result )
+		self.assertEqual( result, "bar\n")
 
 	
 	def test_string_pipe( self ):
 
-		return#
-
 		"""
+		String to Pipe
 		Pipe a String in the shell pipe. This is nice and a must have!!22!
 		"""
 
-		print( "=== string to pipe ===" )
-
 		result = "blah" | Sh( "sed -e 's/ah/ub/'" )
-		print( result )
+		#print( result )
 		self.assertEqual( str( result ), "blub" )
 
-		#result = "blah" | Sh( "sed", "-e", "'s/ah/ub/'" )
-		#print( result )
-		#self.assertEqual( str( result ), "blub" )
+		result = "blah" | Sh( "sed", "-e", "'s/ah/ub/'" )
+		print( result )
+		self.assertEqual( str( result ), "blub" )
 
 
 	def inner_printer( self, arg ):
@@ -82,14 +82,10 @@ class TestSh(unittest.TestCase):
 
 	def test_pipe_func( self ):
 
-		return#
-
 		"""
-		Pipe into function.
+		Pipe to Function.
 		I don't know if this could work or even is a good idea
 		"""
-
-		print( "=== pipe to function ===" )
 
 		Sh( "echo 'blah'" ) | printer
 
@@ -100,18 +96,25 @@ class TestSh(unittest.TestCase):
 
 	def test_arg_chaining( self ):
 
-		print( "=== Adding args ===" )
+		"""
+		Adding Args
+		"""
 
-		shell = Sh( "ls" ).arg( "-a" ).arg( "." )
+		shell = Sh( "echo" ).arg( "foo" ).arg( "bar" )
 
-		self.assertEqual( shell.info(), 'ls -a .' )
+		self.assertEqual( repr( shell ), 'echo foo bar' )
+
+		shell += "faz"
+
+		self.assertEqual( repr( shell ), 'echo foo bar faz' )
 
 
 def printer( arg ):
 
-    print( arg )
+	print( arg )
 
 
 if __name__ == '__main__':
 
 	unittest.main()
+
