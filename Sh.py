@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
-from subprocess import Popen, PIPE
 import sys
-from shlex import quote
+from subprocess import Popen, PIPE
 
 class Shell:
 
@@ -116,7 +115,7 @@ class Shell:
 
 		(out,err) = self.run()
 
-		return out;
+		return out
 
 
 	def __repr__( self ):
@@ -159,14 +158,14 @@ class Shell:
 				else:
 					raise AttributeError( 'Tried to chain the unchainable' )
 
-			return self;
+			return self
 
 
 
 
 class Sh( Shell ):
 
-	"Execute Shell commands in a insane way"
+	#"Execute Shell commands in a insane way"
 
 	def __init__( self, command, *args ):
 
@@ -175,9 +174,9 @@ class Sh( Shell ):
 
 class sh( Shell ):
 
-	"Execute Shell commands in a sane way"
+	#"Execute Shell commands in a sane way"
 
-	def __init__( self, command, *args ):
+	def __init__(self, command, *args, trusted):
 
 		super( Sh, self ).__init__( command, *args, trusted=True )
 

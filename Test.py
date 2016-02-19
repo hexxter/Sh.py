@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import unittest
-from sh.Sh import Sh,sh
+import Sh
 
 
 class TestSh(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestSh(unittest.TestCase):
 	
 	def test_str__( self ):
 
-		expr = Sh( "echo foo" )
+		expr = Sh.Sh("echo foo")
 
 		print( expr )
 
@@ -30,7 +30,7 @@ class TestSh(unittest.TestCase):
 
 	def test_long_pipe( self ):
 
-		"blah" | Sh( "sed -e 's/ah/ub/'" ) | Sh( "tr '[:lower:]' '[:upper:]'" ) | print
+		"blah" | Sh.Sh("sed -e 's/ah/ub/'") | Sh.Sh("tr '[:lower:]' '[:upper:]'") | print
 
 
 	def test_normal( self ):
@@ -40,7 +40,7 @@ class TestSh(unittest.TestCase):
 		Nomal shell operation with pipes and no hustles
 		"""
 		
-		result = str( Sh( "echo foo | sed -e 's/foo/bar/'" ) )
+		result = str(Sh.Sh("echo foo | sed -e 's/foo/bar/'"))
 		#print( result )
 		self.assertEqual( ""+result, "bar\n")
 
@@ -52,7 +52,7 @@ class TestSh(unittest.TestCase):
 		The external pipe is (only) needed if we want to use secure scripting
 		"""
 
-		result = str( Sh( "echo foo" ) | Sh( "sed -e 's/foo/bar/'" ) )
+		result = str(Sh.Sh("echo foo") | Sh.Sh("sed -e 's/foo/bar/'"))
 		#print( result )
 		self.assertEqual( result, "bar\n")
 
@@ -64,11 +64,11 @@ class TestSh(unittest.TestCase):
 		Pipe a String in the shell pipe. This is nice and a must have!!22!
 		"""
 
-		result = "blah" | Sh( "sed -e 's/ah/ub/'" )
+		result = "blah" | Sh.Sh("sed -e 's/ah/ub/'")
 		#print( result )
 		self.assertEqual( str( result ), "blub" )
 
-		result = "blah" | Sh( "sed", "-e", "'s/ah/ub/'" )
+		result = "blah" | Sh.Sh("sed", "-e", "'s/ah/ub/'")
 		print( result )
 		self.assertEqual( str( result ), "blub" )
 
@@ -87,9 +87,9 @@ class TestSh(unittest.TestCase):
 		I don't know if this could work or even is a good idea
 		"""
 
-		Sh( "echo 'blah'" ) | printer
+		Sh.Sh("echo 'blah'") | printer
 
-		Sh( "echo 'blah'" ) | self.inner_printer
+		Sh.Sh("echo 'blah'") | self.inner_printer
 
 		self.assertEqual( self._last_message, 'blah' )
 
@@ -100,7 +100,7 @@ class TestSh(unittest.TestCase):
 		Adding Args
 		"""
 
-		shell = Sh( "echo" ).arg( "foo" ).arg( "bar" )
+		shell = Sh.Sh("echo").arg("foo").arg("bar")
 
 		self.assertEqual( repr( shell ), 'echo foo bar' )
 
