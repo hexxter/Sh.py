@@ -150,11 +150,11 @@ class Sh(Shell):
 	# "Execute Shell commands in a insane way"
 
 	def __init__(self, command, *args):
-		super(Sh, self).__init__(command, *args, trusted=False)
+		super(Sh, self).__init__(command, trusted=False, *args )
 
 
 class sh(Shell):
 	# "Execute Shell commands in a sane way"
 
 	def __init__(self, command, *args):
-		super(Sh, self).__init__(command, *args, trusted=True)
+		super(sh, self).__init__(command, trusted=True, *args )
